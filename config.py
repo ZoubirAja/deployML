@@ -4,16 +4,10 @@ import numpy as np
 import category_encoders as ce
 
 from sklearn.svm import LinearSVC, SVC
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
 from catboost import CatBoostClassifier
-from sklearn.model_selection import GridSearchCV
-import xgboost
-
+from sklearn.calibration import CalibratedClassifierCV
 
 #---------------- Exrtraction des données et fusion ------------------
 sondage = pd.read_csv('datas/extrait_sondage.csv')
@@ -65,9 +59,6 @@ df_encoded['a_quitte_l_entreprise'] = df_encoded['a_quitte_l_entreprise'].apply(
 encoder = ce.BinaryEncoder(cols=['domaine_etude'])
 df_encoded = encoder.fit_transform(df_encoded)
 
-# Encoder seulement sur les Train Value ?
-#frequency_encoding = df_encoded['poste'].value_counts().to_dict()
-#df_encoded['poste'] = df_encoded['poste'].map(frequency_encoding)
 
 df_encoded = df_encoded.drop(columns=['eval_number', 
                                       'augementation_salaire_precedente', 
@@ -109,8 +100,8 @@ df_encoded = create_new_feature(df_encoded, mask_jeunes, "jeunes_employee")
 
 #------------------- Parameters ML -------------------
 
-X = df_encoded.drop(columns=['a_quitte_l_entreprise'])
-y = df_encoded['a_quitte_l_entreprise']
+X = df_encoded.drop(columns=[FEATURE_TARGET])
+y = df_encoded[FEATURE_TARGET]
 
 models_test = [["Logistic Regression", LogisticRegression(max_iter=10000, class_weight='balanced')],
                ["Catboost", CatBoostClassifier(iterations=2, depth=4)],
@@ -120,4 +111,14 @@ models_test = [["Logistic Regression", LogisticRegression(max_iter=10000, class_
                ["SVCKernel", SVC(kernel="rbf", gamma=.1)]
               ]
 
-model_linearSVC = LinearSVC(class_weight='balanced')
+calibrator = CalibratedClassifierCV(
+        LinearSVC(class_weight='balanced'),
+        method='sigmoid',
+        cv=5
+    )
+
+# On n'encode pas la valeur poste dans cette dataframe mais plus tard dans le modele
+# Ceci afin de séparer l'encodage entre train et test et éviter l'overfit
+# Mais on en a besoin ici donc on va encoder dans une nouvelle df
+
+__all__ = ['df_encoded', 'df_final', 'getEmployee', 'models_test']
