@@ -120,5 +120,3 @@ calibrator = CalibratedClassifierCV(
 # On n'encode pas la valeur poste dans cette dataframe mais plus tard dans le modele
 # Ceci afin de séparer l'encodage entre train et test et éviter l'overfit
 # Mais on en a besoin ici donc on va encoder dans une nouvelle df
-
-__all__ = ['df_encoded', 'df_final', 'getEmployee', 'models_test']
