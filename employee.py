@@ -4,6 +4,7 @@ import pandas as pd
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 import pandas as pd
+import joblib
 
 # ============================================================
 # SCHÉMA DE DONNÉES
@@ -15,18 +16,8 @@ FREQUENCE_MAP = {
     "frequent": 2
 }
 
-# Target encoding poste — remplace les valeurs par celles de ton modèle
-POSTE_TARGET_ENCODING = {
-    "cadre commercial":         0.016,
-    "assistant de direction":   0.056,
-    "consultant":               0.060,
-    "tech lead":                0.062,
-    "manager":                  0.132,
-    "senior manager":           0.179,
-    "representant commercial":  0.244,
-    "directeur technique":      0.270,
-    "ressources humaines":      0.417,
-}
+_, __, TARGET_ENCODING, ___ = joblib.load('model.pkl')
+POSTES_VALIDES = set(TARGET_ENCODING.keys())
 
 class EmployeeInput(BaseModel):
     # -------- Obligatoires --------
@@ -76,8 +67,8 @@ class EmployeeInput(BaseModel):
 
     @field_validator('poste')
     def valider_poste(cls, v):
-        if v.lower() not in POSTE_TARGET_ENCODING:
-            raise ValueError(f"Poste inconnu. Postes disponibles : {list(POSTE_TARGET_ENCODING.keys())}")
+        if v.lower() not in POSTES_VALIDES:
+            raise ValueError(f"Poste inconnu. Postes disponibles : {sorted(POSTES_VALIDES)}")
         return v.lower()
 
 
@@ -90,7 +81,7 @@ def prepare_dataframe(data: EmployeeInput) -> pd.DataFrame:
     dept = data.departement.lower()
     departement_Consulting          = 1 if dept == "consulting" else 0
     departement_Ressources_Humaines = 1 if dept == "rh" else 0
-    poste_encoded = POSTE_TARGET_ENCODING[data.poste]
+    poste_encoded = TARGET_ENCODING.get(data.poste.lower(), 0.5)
     POSTES_SAD = {"consultant", "representant commercial", "ressources humaines"}
 
     # -------- Valeurs de base --------
@@ -165,38 +156,13 @@ def get_employee(id):
             return pd.DataFrame([row], columns=columns)
 
 
-employe_risque_fort = {
-    "heure_supplementaires": 1,
-    "age": 28,
-    "genre": 1,
-    "revenu_mensuel": 2500,
-    "poste": "ressources humaines",
-    "nombre_experiences_precedentes": 5,
-    "annee_experience_totale": 6,
-    "annees_dans_l_entreprise": 1,
-    "annees_dans_le_poste_actuel": 1,
-    "nombre_participation_pee": 0,
-    "nb_formations_suivies": 1,
-    "distance_domicile_travail": 28,
-    "niveau_education": 2,
-    "frequence_deplacement": "frequent",
-    "annees_depuis_la_derniere_promotion": 3,
-    "annes_sous_responsable_actuel": 1,
-    "departement": "rh",
-    "augmentation_salaire_precedente_pourcentage": 11,
-    "satisfaction_employee_environnement": 1,
-    "satisfaction_employee_nature_travail": 1,
-    "satisfaction_employee_equipe": 1,
-    "satisfaction_employee_equilibre_pro_perso": 1,
-    "note_evaluation_precedente": 4,
-    "note_evaluation_actuelle": 4,
-    "niveau_hierarchique_poste": 1,
-    "statut_marital": 0,
-    "domaine_etude_0": 0,
-    "domaine_etude_1": 1,
-    "domaine_etude_2": 0
-}
-# mastar = prepare_dataframe(EmployeeInput(**employe_risque_fort))
-
-# mastar.columns
-
+def get_employees_groupe(poste):
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM employees WHERE poste = %s;", (poste,))  # ← poste au lieu de id
+            rows = cursor.fetchall()  # ← fetchall pour récupérer tous les employés du groupe
+            if not rows:
+                return None
+            
+            columns = [desc[0] for desc in cursor.description]
+            return pd.DataFrame(rows, columns=columns)  # ← rows au lieu de [row]
