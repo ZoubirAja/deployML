@@ -4,7 +4,6 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score
@@ -12,6 +11,7 @@ from sklearn.model_selection import cross_validate, StratifiedKFold
 import joblib
 from config import calibrator, df_encoded
 from sklearn.svm import LinearSVC
+from minio_client import upload_model
 
 
 #------------------------------------ Modele de prédiction-------------------------
@@ -64,6 +64,7 @@ def predict_model(X, y):
     calibrator.fit(X_calib, y_train)
     # On sauvegarde le modele pour l'appeler via l'API
     joblib.dump((pipeline, calibrator, target_encoding, feature_names), 'model.pkl')
+    upload_model() 
 
     y_pred = pipeline.predict(X_test)
 
