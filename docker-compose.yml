@@ -1,0 +1,40 @@
+services:
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # les données persistent entre les restarts
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env                    # charge ton .env automatiquement
+    depends_on:
+      - db   
+      - minio                   # attend que la BDD soit up
+    volumes:
+      - ./:/app
+      - /app/venv
+  
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET}
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # interface web minIO
+    volumes:
+      - minio_data:/data
+volumes:
+  postgres_data:
+  minio_data:

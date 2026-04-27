@@ -3,10 +3,7 @@ import pandas as pd
 import numpy as np
 import category_encoders as ce
 
-from sklearn.svm import LinearSVC, SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from catboost import CatBoostClassifier
+from sklearn.svm import LinearSVC
 from sklearn.calibration import CalibratedClassifierCV
 
 #---------------- Exrtraction des données et fusion ------------------
@@ -102,14 +99,6 @@ df_encoded = create_new_feature(df_encoded, mask_jeunes, "jeunes_employee")
 
 X = df_encoded.drop(columns=[FEATURE_TARGET])
 y = df_encoded[FEATURE_TARGET]
-
-models_test = [["Logistic Regression", LogisticRegression(max_iter=10000, class_weight='balanced')],
-               ["Catboost", CatBoostClassifier(iterations=2, depth=4)],
-               ["LinearSVC", LinearSVC(class_weight='balanced')],
-               ["RandomForest", RandomForestClassifier(class_weight='balanced')],
-               ["SVC", SVC(kernel='poly')],
-               ["SVCKernel", SVC(kernel="rbf", gamma=.1)]
-              ]
 
 calibrator = CalibratedClassifierCV(
         LinearSVC(class_weight='balanced'),

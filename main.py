@@ -3,11 +3,20 @@ from employee import get_employee, EmployeeInput, prepare_dataframe, get_employe
 import joblib
 import pandas as pd
 #from init_db import init_db
+from minio_client import download_model
+from contextlib import asynccontextmanager
+
 
 # à appeler une seule fois pour créer et remplir la table
 #init_db()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    download_model()   # ← télécharge depuis MinIO au démarrage de l'API
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 pipeline, calibrator, target_encoding, feature_names = joblib.load('model.pkl')
 
 @app.post("/predict/{id_employee}")

@@ -1,12 +1,11 @@
 from config import df_encoded
 from database import get_connection
 from psycopg2.extras import execute_values
+import joblib
 
 def init_db():
     with get_connection() as conn:
         with conn.cursor() as cursor:
-
-            cursor = conn.cursor()
 
             # Créer la table
             cursor.execute("""
@@ -57,6 +56,11 @@ def init_db():
                 "departement_Ressources Humaines": "departement_ressources_humaines"
             })
 
+            _, __, target_encoding, ___ = joblib.load('model.pkl')
+            target_encoding = {k.lower(): v for k, v in target_encoding.items()}
+            df_clean['poste'] = df_clean['poste'].str.lower().map(target_encoding)
+
+
             columns = df_clean.columns.tolist()
             values = [tuple(row) for row in df_clean.itertuples(index=False)]
 
@@ -68,3 +72,6 @@ def init_db():
 
             conn.commit()
             print(f"{len(values)} lignes insérées avec succès !")
+
+if __name__ == "__main__":
+    init_db()
