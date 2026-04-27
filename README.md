@@ -128,6 +128,10 @@ La documentation interactive est accessible sur : http://localhost:8000/docs
 | `POST` | `/predict` | Prédiction depuis des données brutes |
 | `POST` | `/predict/group/{poste}` | Prédiction pour tout un groupe de poste |
 
+Le modèle renvoit à chaque fois la prédiction (Si l'employée reste ou pas) ainsi que la probabilité de départ.
+Vu le déséquilibre dans les données (16% de démissionaire) le modèle s'est adapté et considère un employée sur le départ pour une probabilité de départ supérieur à 15%.
+Il faut bien garder cela en tête pour traiter les altertes au mieux.
+
 ### Exemple d'appel `/predict`
 
 ```bash
