@@ -6,8 +6,8 @@ load_dotenv()
 
 # ======== /predict_nouveau (données brutes) ========
 headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer {0}'.format(os.getenv("API_KEY"))
+    'accept': 'application/json',
+    'X-API-Key': 'Bearer {0}'.format(os.getenv("API_KEY"))
 }
 
 def test_predict_valide(client, employe_valide):
