@@ -6,7 +6,7 @@ load_dotenv()
 
 # ======== /predict_nouveau (données brutes) ========
 headers = {
-    'accept': 'application/json',
+    'Content-Type': 'application/json',
     'X-API-Key': 'Bearer {0}'.format(os.getenv("API_KEY"))
 }
 
