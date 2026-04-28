@@ -7,7 +7,7 @@ load_dotenv()
 # ======== /predict_nouveau (données brutes) ========
 headers = {
     'Content-Type': 'application/json',
-    'X-Api-Key': 'Bearer une_cle_secrete_longue_et_random'
+    'X-Api-Key': 'une_cle_secrete_longue_et_random'
 }
 
 def test_predict_valide(client, employe_valide):
