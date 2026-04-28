@@ -58,7 +58,7 @@ DB_PASSWORD=ton_mot_de_passe
 
 S3_KEY=nom_minio
 S3_SECRET=ton_mot_de_passe
-API_KEY=un_cle_qui_te_sera_fourni
+API_KEY=une_cle_secrete_longue_et_random
 ```
 
 ### 5. Créer la base de données PostgreSQL
