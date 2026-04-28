@@ -1,3 +1,12 @@
+---
+title: deployML
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # 🧠 Projet MLOps — Prédiction de départ employé
 
 API FastAPI permettant de prédire la probabilité qu'un employé quitte l'entreprise, basée sur un modèle LinearSVC calibré.

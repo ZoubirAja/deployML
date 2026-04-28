@@ -26,6 +26,10 @@ app = FastAPI(lifespan=lifespan)
 
 pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
+@app.get("/")
+def root():
+    return {"message": "Hello World ! \n deployML API tourne !!"}
+
 @app.post("/predict/{id_employee}", dependencies=[Depends(verify_api_key)])
 def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
