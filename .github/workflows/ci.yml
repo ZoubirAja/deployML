@@ -33,7 +33,8 @@ jobs:
 
     # Étape 3 — Builder et lancer les containers
     - name: Lancer docker compose
-      run: docker compose up --build -d
+      - run: docker compose up --build -d db minio
+      - run: docker compose up --build -d api
       # -d = detached, tourne en arrière plan
 
     # Étape 4 — Attendre que les services soient prêts
@@ -41,13 +42,19 @@ jobs:
       run: |
         echo "Attente de l'API..."
         for i in $(seq 1 30); do
-          if docker compose exec -T api echo "ok" 2>/dev/null; then
-            echo "API prête"
-            break
+          if docker compose ps api | grep -q "running"; then
+            if docker compose exec -T api echo "ok" >/dev/null 2>&1; then
+              echo "API prête"
+              exit 0
+            fi
           fi
           echo "Tentative $i/30..."
           sleep 3
         done
+
+        echo "L'API n'a jamais démarré correctement"
+        docker compose logs api
+        exit 1
 
     - name: Afficher les logs si problème
       if: failure()   # ← s'exécute UNIQUEMENT si une étape précédente a échoué
