@@ -43,16 +43,21 @@ jobs:
       run: |
         echo "Attente de l'API..."
         for i in $(seq 1 10); do
-          if docker compose exec -T api echo "ok" 2>/dev/null; then
-            echo "API prête"
-            exit 0
+          if docker compose ps --status running | grep -q api; then
+            if docker compose exec -T api echo "ok" >/dev/null 2>&1; then
+              echo "API prête"
+              exit 0
             fi
+          fi
+
           echo "Tentative $i/10..."
-          sleep 30
+          docker compose ps -a
+          sleep 10
         done
 
-        echo "L'API n'a jamais démarré correctement"
-        docker compose logs api
+        echo "API jamais prête"
+        docker compose logs api || true
+        docker compose logs db || true
         exit 1
 
     - name: Afficher les logs si problème
