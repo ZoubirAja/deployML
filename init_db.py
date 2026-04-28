@@ -56,6 +56,18 @@ def init_db():
                 "departement_Ressources Humaines": "departement_ressources_humaines"
             })
 
+            # Préparation pour sauvegarder les scores de l'api
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS prediction_logs (
+                    id SERIAL PRIMARY KEY,
+                    timestamp TIMESTAMPTZ DEFAULT NOW(),
+                    id_employee INTEGER,
+                    prediction INTEGER,
+                    probabilite_depart FLOAT,
+                    resultat TEXT
+                );
+            """)
+
             _, __, target_encoding, ___, ____ = joblib.load('model.pkl')
             target_encoding = {k.lower(): v for k, v in target_encoding.items()}
             df_clean['poste'] = df_clean['poste'].str.lower().map(target_encoding)
