@@ -22,12 +22,12 @@ jobs:
     - name: Créer le .env
       run: |
         echo "DB_HOST=db" >> .env
-        echo "DB_NAME=testdb" >> .env
-        echo "DB_USER=testuser" >> .env
-        echo "DB_PASSWORD=testpassword" >> .env
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+        echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
         echo "S3_URL=http://minio:9000" >> .env
-        echo "S3_KEY=minioadmin" >> .env
-        echo "S3_SECRET=minioadmin123" >> .env
+        echo "S3_KEY=${{ secrets.S3_KEY }}" >> .env
+        echo "S3_SECRET=${{ secrets.S3_SECRET }}" >> .env
       # "run" = exécute des commandes shell directement
       # on injecte les variables d'env depuis les secrets GitHub
 
