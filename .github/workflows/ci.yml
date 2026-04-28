@@ -55,7 +55,16 @@ jobs:
 
     # Étape 5 — Initialiser la BDD
     - name: Initialiser la BDD
-      run: docker compose exec -T api python init_db.py
+      run: |
+        free -h
+        docker stats --no-stream
+        docker compose ps
+        dmesg | tail -50 || true
+        docker compose exec -T api python init_db.py
+        free -h
+        docker stats --no-stream
+        docker compose ps
+        dmesg | tail -50 || true
       # -T = désactive le TTY, obligatoire dans un environnement CI
 
     # Étape 6 — Entraîner le modèle
