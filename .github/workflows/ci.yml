@@ -43,10 +43,9 @@ jobs:
       run: |
         echo "Attente de l'API..."
         for i in $(seq 1 10); do
-          if docker compose ps api | grep -q "running"; then
-            if docker compose exec -T api echo "ok" >/dev/null 2>&1; then
-              echo "API prête"
-              exit 0
+          if docker compose exec -T api echo "ok" 2>/dev/null; then
+            echo "API prête"
+            exit 0
             fi
           fi
           echo "Tentative $i/10..."
