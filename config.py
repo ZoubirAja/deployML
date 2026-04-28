@@ -97,7 +97,7 @@ df_encoded = create_new_feature(df_encoded, mask_jeunes, "jeunes_employee")
 
 #------------------- Parameters ML -------------------
 
-X = df_encoded.drop(columns=[FEATURE_TARGET])
+X = df_encoded.drop(columns=[FEATURE_TARGET, 'id_employee'])
 y = df_encoded[FEATURE_TARGET]
 
 calibrator = CalibratedClassifierCV(

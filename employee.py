@@ -16,7 +16,7 @@ FREQUENCE_MAP = {
     "frequent": 2
 }
 
-_, __, TARGET_ENCODING, ___ = joblib.load('model.pkl')
+_, __, TARGET_ENCODING, ___, ____ = joblib.load('model.pkl')
 POSTES_VALIDES = set(TARGET_ENCODING.keys())
 
 class EmployeeInput(BaseModel):

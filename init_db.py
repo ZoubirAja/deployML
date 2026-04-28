@@ -56,7 +56,7 @@ def init_db():
                 "departement_Ressources Humaines": "departement_ressources_humaines"
             })
 
-            _, __, target_encoding, ___ = joblib.load('model.pkl')
+            _, __, target_encoding, ___, ____ = joblib.load('model.pkl')
             target_encoding = {k.lower(): v for k, v in target_encoding.items()}
             df_clean['poste'] = df_clean['poste'].str.lower().map(target_encoding)
 

@@ -62,10 +62,12 @@ def predict_model(X, y):
         index=X_train.index
     )
     calibrator.fit(X_calib, y_train)
-    # On sauvegarde le modele pour l'appeler via l'API
-    joblib.dump((pipeline, calibrator, target_encoding, feature_names), 'model.pkl')
-    upload_model() 
 
     y_pred = pipeline.predict(X_test)
+    score = f1_score(y_test, y_pred, zero_division=0)
 
-    return f1_score(y_test, y_pred, zero_division=0)
+    # On sauvegarde le modele pour l'appeler via l'API
+    joblib.dump((pipeline, calibrator, target_encoding, feature_names, score), 'model.pkl')
+    upload_model() 
+
+    return score
