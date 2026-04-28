@@ -40,8 +40,18 @@ jobs:
     - name: Attendre que l'API soit prête
       run: |
         echo "Attente de l'API..."
-        sleep 15
-        docker compose ps   # affiche l'état des containers dans les logs CI
+        for i in $(seq 1 30); do
+          if docker compose exec -T api echo "ok" 2>/dev/null; then
+            echo "API prête"
+            break
+          fi
+          echo "Tentative $i/30..."
+          sleep 3
+        done
+
+    - name: Afficher les logs si problème
+      if: failure()   # ← s'exécute UNIQUEMENT si une étape précédente a échoué
+      run: docker compose logs api
 
     # Étape 5 — Initialiser la BDD
     - name: Initialiser la BDD
