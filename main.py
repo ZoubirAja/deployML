@@ -17,10 +17,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-pipeline, calibrator, target_encoding, feature_names = joblib.load('model.pkl')
+pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
 @app.post("/predict/{id_employee}")
-def predictEmployee(id_employee: int):
+def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
     if employee_df is None:
         return {
@@ -41,8 +41,8 @@ def predictEmployee(id_employee: int):
 
     return run_prediction(employee_df)
 
-@app.post("/predict")
-def predictEmployee(donnees: EmployeeInput):
+@app.post("/predict_nouveau")
+def predict_from_data(donnees: EmployeeInput):
     employee_df = prepare_dataframe(donnees)
 
     return run_prediction(employee_df)
