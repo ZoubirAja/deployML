@@ -61,6 +61,7 @@ S3_SECRET=ton_mot_de_passe
 API_KEY=une_cle_secrete_longue_et_random
 ```
 
+Dans Fastapi API_KEY devra être ajouté directement en cliquant sur "Authorize"
 ### 5. Créer la base de données PostgreSQL
 
 ```bash
