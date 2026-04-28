@@ -1,5 +1,8 @@
 import pytest
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 # ======== /predict_nouveau (données brutes) ========
 headers = {
