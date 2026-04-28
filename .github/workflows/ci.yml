@@ -47,7 +47,6 @@ jobs:
             echo "API prête"
             exit 0
             fi
-          fi
           echo "Tentative $i/10..."
           sleep 30
         done
