@@ -166,3 +166,13 @@ def get_employees_groupe(poste):
             
             columns = [desc[0] for desc in cursor.description]
             return pd.DataFrame(rows, columns=columns)  # ← rows au lieu de [row]
+        
+def log_prediction(id_employee, prediction, probabilite, resultat):
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO prediction_logs 
+                (id_employee, prediction, probabilite_depart, resultat)
+                VALUES (%s, %s, %s, %s)
+            """, (id_employee, prediction, probabilite, resultat))
+            conn.commit()

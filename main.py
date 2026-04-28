@@ -1,14 +1,21 @@
 from fastapi import FastAPI
-from employee import get_employee, EmployeeInput, prepare_dataframe, get_employees_groupe
+from employee import get_employee, EmployeeInput, prepare_dataframe, get_employees_groupe, log_prediction
 import joblib
 import pandas as pd
-#from init_db import init_db
 from minio_client import download_model
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import APIKeyHeader
+import os
 
+API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
-# à appeler une seule fois pour créer et remplir la table
-#init_db()
+def verify_api_key(key: str = Depends(API_KEY_HEADER)):
+    if key != os.getenv("API_KEY"):
+        raise HTTPException(
+            status_code=403,
+            detail="API Key invalide"
+        )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,7 +26,7 @@ app = FastAPI(lifespan=lifespan)
 
 pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
-@app.post("/predict/{id_employee}")
+@app.post("/predict/{id_employee}", dependencies=[Depends(verify_api_key)])
 def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
     if employee_df is None:
@@ -39,15 +46,15 @@ def predict_by_id(id_employee: int):
     if employee_df['poste'].isna().any():
         employee_df['poste'] = employee_df['poste'].fillna(0.5)
 
-    return run_prediction(employee_df)
+    return run_prediction(employee_df, id_employee)
 
-@app.post("/predict_nouveau")
+@app.post("/predict_nouveau", dependencies=[Depends(verify_api_key)])
 def predict_from_data(donnees: EmployeeInput):
     employee_df = prepare_dataframe(donnees)
 
     return run_prediction(employee_df)
 
-def run_prediction(employee_df):
+def run_prediction(employee_df, id_employee=None):
     prediction = pipeline.predict(employee_df)
 
     employee_transformed = pd.DataFrame(
@@ -60,6 +67,14 @@ def run_prediction(employee_df):
     
     resultat = "Va quitter l'entreprise" if prediction[0] == 1 else "Va rester dans l'entreprise"
     
+    # Sauvegarde résultalt
+    log_prediction(
+        id_employee=id_employee,
+        prediction=int(prediction[0]),
+        probabilite=round(proba[0][1]*100),
+        resultat=resultat
+    )
+
     return {
         "prediction": int(prediction[0]),
         "probabilite_de_depart": ("{0}%".format(round(proba[0][1]*100))),
