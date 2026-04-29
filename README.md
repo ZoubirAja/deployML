@@ -187,10 +187,11 @@ curl -X POST "http://localhost:8000/predict_nouveau" \
 ├── database.py       # Connexion PostgreSQL
 ├── init_db.py        # Création et peuplement de la table employees
 ├── requirements.txt  # Dépendances Python
+├── tests/            # Contient les tests unitaires
 ├── .env              # Variables d'environnement (non commité)
 ├── .env.example      # Template du .env
 ├── .gitignore        # Fichiers ignorés par git
-└── model.pkl         # Modèle entraîné (non commité)
+└── model.pkl         # Modèle entraîné 
 ```
 
 ---
