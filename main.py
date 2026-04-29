@@ -26,6 +26,10 @@ app = FastAPI(lifespan=lifespan)
 
 pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
+@app.get("/")
+def root():
+    return {"message": "Hello World ! \n deployML API tourne !!"}
+
 @app.post("/predict/{id_employee}", dependencies=[Depends(verify_api_key)])
 def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
@@ -125,117 +129,3 @@ def predict_poste(poste: str):
         "taux_de_risque_moyen": f"{round(probas_depart.mean() * 100)}%",
         "top5_employes_a_risque": top5
     }
-    
-
-# print(predict_poste('Cadre Commercial'))
-
-
-# print(target_encoding)
-
-# # -------- Profils de test --------
-
-# # Profil 1 : Risque élevé de départ
-# employe_risque_fort = {
-#     "heure_supplementaires": 1,
-#     "age": 28,
-#     "genre": 1,
-#     "revenu_mensuel": 2500,
-#     "poste": "ressources humaines",
-#     "nombre_experiences_precedentes": 5,
-#     "annee_experience_totale": 6,
-#     "annees_dans_l_entreprise": 1,
-#     "annees_dans_le_poste_actuel": 1,
-#     "nombre_participation_pee": 0,
-#     "nb_formations_suivies": 1,
-#     "distance_domicile_travail": 28,
-#     "niveau_education": 2,
-#     "frequence_deplacement": "frequent",
-#     "annees_depuis_la_derniere_promotion": 3,
-#     "annes_sous_responsable_actuel": 1,
-#     "departement": "rh",
-#     "augmentation_salaire_precedente_pourcentage": 11,
-#     "satisfaction_employee_environnement": 1,
-#     "satisfaction_employee_nature_travail": 1,
-#     "satisfaction_employee_equipe": 1,
-#     "satisfaction_employee_equilibre_pro_perso": 1,
-#     "note_evaluation_precedente": 4,
-#     "note_evaluation_actuelle": 4,
-#     "niveau_hierarchique_poste": 1,
-#     "statut_marital": 0,
-#     "domaine_etude_0": 0,
-#     "domaine_etude_1": 1,
-#     "domaine_etude_2": 0
-# }
-
-# # Profil 2 : Risque faible de départ
-# employe_stable = {
-#     "heure_supplementaires": 1,
-#     "age": 25,
-#     "genre": 0,
-#     "revenu_mensuel": 3000,
-#     "poste": "cadre commercial",
-#     "nombre_experiences_precedentes": 6,
-#     "annee_experience_totale": 20,
-#     "annees_dans_l_entreprise": 12,
-#     "annees_dans_le_poste_actuel": 6,
-#     "nombre_participation_pee": 5,
-#     "nb_formations_suivies": 4,
-#     "distance_domicile_travail": 5,
-#     "niveau_education": 4,
-#     "frequence_deplacement": "jamais",
-#     "annees_depuis_la_derniere_promotion": 1,
-#     "annes_sous_responsable_actuel": 8,
-#     "departement": "commercial",
-#     "augmentation_salaire_precedente_pourcentage": 20,
-#     "satisfaction_employee_environnement": 4,
-#     "satisfaction_employee_nature_travail": 4,
-#     "satisfaction_employee_equipe": 4,
-#     "satisfaction_employee_equilibre_pro_perso": 4,
-#     "note_evaluation_precedente": 3,
-#     "note_evaluation_actuelle": 3,
-#     "niveau_hierarchique_poste": 4,
-#     "statut_marital": 1,
-#     "domaine_etude_0": 1,
-#     "domaine_etude_1": 0,
-#     "domaine_etude_2": 0
-# }
-
-# # Profil 3 : Cas limite — champs optionnels absents
-# employe_minimal = {
-#     "heure_supplementaires": 1,
-#     "age": 35,
-#     "genre": 1,
-#     "revenu_mensuel": 4500,
-#     "poste": "manager",
-#     "nombre_experiences_precedentes": 3,
-#     "annee_experience_totale": 10,
-#     "annees_dans_l_entreprise": 4,
-#     "annees_dans_le_poste_actuel": 2,
-#     "nombre_participation_pee": 2,
-#     "nb_formations_suivies": 2,
-#     "distance_domicile_travail": 15,
-#     "niveau_education": 3,
-#     "frequence_deplacement": "occasionnel",
-#     "annees_depuis_la_derniere_promotion": 2,
-#     "annes_sous_responsable_actuel": 3,
-#     "departement": "consulting",
-#     "augmentation_salaire_precedente_pourcentage": 15
-#     # Pas de champs optionnels → valeurs médianes appliquées
-# }
-
-# # -------- Appels API --------
-# profils = {
-#     "Risque fort": employe_risque_fort,
-#     "Stable": employe_stable,
-#     "Minimal": employe_minimal
-# }
-
-# for nom, profil in profils.items():
-#     response = predictEmployee(EmployeeInput(**profil))
-#     print(f"\n--- {nom} ---")
-#     print(response)
-
-# for n in range(41, 50):
-#     response = predictEmployee(n)
-#     print(f"\n--- {n} ---")
-#     print(response)
