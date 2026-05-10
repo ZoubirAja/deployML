@@ -74,8 +74,9 @@ def predict_by_id(id_employee: int):
 
 @app.post("/predict_nouveau", dependencies=[Depends(verify_api_key)])
 def predict_from_data(donnees: EmployeeInput):
+    employee_df = prepare_dataframe(donnees)
 
-    return run_prediction(donnees)
+    return run_prediction(employee_df)
 
 def run_prediction(employee_df, id_employee=None):
     prediction = pipeline.predict(employee_df)

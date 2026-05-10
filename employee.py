@@ -1,4 +1,3 @@
-from database import get_connection
 import pandas as pd
 
 from pydantic import BaseModel, Field, field_validator
