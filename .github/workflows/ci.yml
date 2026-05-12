@@ -94,3 +94,32 @@ jobs:
       with:
         file: ./coverage.xml
       # affiche le % de couverture directement dans la PR sur GitHub
+  
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: tests  # ← attend que les tests passent avant de déployer
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    # ↑ se déclenche uniquement quand la PR est mergée dans main
+
+    steps:
+
+    - name: Checkout du code
+      uses: actions/checkout@v4
+
+    - name: Installer Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Installer MkDocs
+      run: pip install mkdocs-material  # ou juste mkdocs selon ton thème
+
+    - name: Déployer la doc sur HuggingFace
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        mkdocs build
+        # ici la commande pour pusher sur HuggingFace
+        # ça dépend de comment ton Space HF est configuré
