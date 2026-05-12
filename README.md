@@ -128,9 +128,9 @@ Cela génère un fichier `model.pkl` à la racine du projet.
 fastapi dev main.py         # mode développement
 ```
 
-L'API est accessible sur : http://localhost:8000
+L'API est accessible sur : http://localhost:7860
 
-La documentation interactive est accessible sur : http://localhost:8000/docs
+La documentation interactive est accessible sur : http://localhost:7860/docs
 
 ---
 
@@ -149,7 +149,7 @@ Il faut bien garder cela en tête pour traiter les altertes au mieux.
 ### Exemple d'appel `/predict_nouveau`
 
 ```bash
-curl -X POST "http://localhost:8000/predict_nouveau" \
+curl -X POST "http://localhost:7860/predict_nouveau" \
   -H "Content-Type: application/json" \
   -d '{
     "heure_supplementaires": 1,
