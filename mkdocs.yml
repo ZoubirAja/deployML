@@ -1,0 +1,11 @@
+site_name: DeployML — Documentation
+theme:
+  name: material
+  language: fr
+
+nav:
+  - Accueil: index.md
+  - Architecture: architecture.md
+  - API: api.md
+  - Base de données: database.md
+  - Déploiement: deployment.md
