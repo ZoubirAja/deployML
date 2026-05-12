@@ -1,5 +1,7 @@
-from fastapi import FastAPI
-from employee import get_employee, EmployeeInput, prepare_dataframe, get_employees_groupe, log_prediction
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import logging
+from employee import get_employee, get_employees_groupe, log_prediction, EmployeeInput, prepare_dataframe
 import joblib
 import pandas as pd
 from minio_client import download_model
@@ -7,6 +9,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import APIKeyHeader
 import os
+from models import Employee 
+from config_env import DEBUG, APP_ENV
 
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
@@ -22,8 +26,24 @@ async def lifespan(app: FastAPI):
     download_model()   # ← télécharge depuis MinIO au démarrage de l'API
     yield
 
-app = FastAPI(lifespan=lifespan)
-
+app = FastAPI(
+    lifespan=lifespan,
+    debug=DEBUG
+)
+# Handler d'erreur global
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    if DEBUG:
+        # En dev → stack trace complète
+        raise exc
+    else:
+        # En prod → message générique, pas de détails
+        logging.error(f"Erreur : {exc}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Erreur interne du serveur"}
+        )
+    
 pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
 @app.get("/")

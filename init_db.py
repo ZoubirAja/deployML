@@ -1,89 +1,44 @@
 from config import df_encoded
-from database import get_connection
-from psycopg2.extras import execute_values
+from database import engine, Base, SessionLocal
+from models import Employee
 import joblib
 
 def init_db():
-    with get_connection() as conn:
-        with conn.cursor() as cursor:
+    print("Création des tables...")
+    # Crée toutes les tables définies dans models.py
+    Base.metadata.create_all(bind=engine)
+    print("Tables créées")
 
-            # Créer la table
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS employees (
-                    satisfaction_employee_environnement INTEGER,
-                    note_evaluation_precedente INTEGER,
-                    niveau_hierarchique_poste INTEGER,
-                    satisfaction_employee_nature_travail INTEGER,
-                    satisfaction_employee_equipe INTEGER,
-                    satisfaction_employee_equilibre_pro_perso INTEGER,
-                    note_evaluation_actuelle INTEGER,
-                    heure_supplementaires INTEGER,
-                    id_employee INTEGER PRIMARY KEY,
-                    age INTEGER,
-                    genre INTEGER,
-                    revenu_mensuel INTEGER,
-                    statut_marital INTEGER,
-                    poste FLOAT,
-                    nombre_experiences_precedentes INTEGER,
-                    annee_experience_totale INTEGER,
-                    annees_dans_l_entreprise INTEGER,
-                    annees_dans_le_poste_actuel INTEGER,
-                    a_quitte_l_entreprise INTEGER,
-                    nombre_participation_pee INTEGER,
-                    nb_formations_suivies INTEGER,
-                    distance_domicile_travail INTEGER,
-                    niveau_education INTEGER,
-                    domaine_etude_0 INTEGER,
-                    domaine_etude_1 INTEGER,
-                    domaine_etude_2 INTEGER,
-                    frequence_deplacement INTEGER,
-                    annees_depuis_la_derniere_promotion INTEGER,
-                    annes_sous_responsable_actuel INTEGER,
-                    departement_consulting BOOLEAN,
-                    departement_ressources_humaines BOOLEAN,
-                    augmentation_salaire_precedente_pourcentage INTEGER,
-                    reconnaissance_travail INTEGER,
-                    pro_perso_deplacement INTEGER,
-                    nouveaux_employee INTEGER,
-                    non_satisfait INTEGER,
-                    jeunes_employee INTEGER
-                );
-            """)
+    # Insérer les données
+    _, __, target_encoding, ___, ____ = joblib.load('model.pkl')
+    target_encoding = {k.lower(): v for k, v in target_encoding.items()}
 
-            # Insérer les données du dataframe
-            df_clean = df_encoded.rename(columns={
-                "departement_Consulting": "departement_consulting",
-                "departement_Ressources Humaines": "departement_ressources_humaines"
-            })
+    df_clean = df_encoded.copy()
+    df_clean = df_clean.rename(columns={
+        "departement_Consulting": "departement_consulting",
+        "departement_Ressources Humaines": "departement_ressources_humaines"
+    })
+    df_clean['poste'] = df_clean['poste'].str.lower().map(target_encoding)
 
-            # Préparation pour sauvegarder les scores de l'api
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS prediction_logs (
-                    id SERIAL PRIMARY KEY,
-                    timestamp TIMESTAMPTZ DEFAULT NOW(),
-                    id_employee INTEGER,
-                    prediction INTEGER,
-                    probabilite_depart FLOAT,
-                    resultat TEXT
-                );
-            """)
+    db = SessionLocal()
+    try:
+        # Vérifier si la table est déjà peuplée
+        if db.query(Employee).count() > 0:
+            print("Table déjà peuplée — skip")
+            return
 
-            _, __, target_encoding, ___, ____ = joblib.load('model.pkl')
-            target_encoding = {k.lower(): v for k, v in target_encoding.items()}
-            df_clean['poste'] = df_clean['poste'].str.lower().map(target_encoding)
-
-
-            columns = df_clean.columns.tolist()
-            values = [tuple(row) for row in df_clean.itertuples(index=False)]
-
-            execute_values(
-                cursor,
-                f"INSERT INTO employees ({', '.join(columns)}) VALUES %s ON CONFLICT (id_employee) DO NOTHING;",
-                values
-            )
-
-            conn.commit()
-            print(f"{len(values)} lignes insérées avec succès !")
+        employees = [
+            Employee(**{k: v for k, v in row.items()})
+            for row in df_clean.to_dict(orient='records')
+        ]
+        db.bulk_save_objects(employees)
+        db.commit()
+        print(f"{len(employees)} employés insérés ")
+    except Exception as e:
+        db.rollback()
+        print(f"Erreur : {e}")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     init_db()

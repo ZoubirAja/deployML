@@ -1,10 +1,11 @@
-from database import get_connection
 import pandas as pd
 
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 import pandas as pd
 import joblib
+from database import SessionLocal
+from models import Employee, PredictionLog
 
 # ============================================================
 # SCHÉMA DE DONNÉES
@@ -144,35 +145,51 @@ def prepare_dataframe(data: EmployeeInput) -> pd.DataFrame:
 
     return pd.DataFrame([row])
 
-def get_employee(id):
-    with get_connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM employees WHERE id_employee = %s;", (id,))
-            row = cursor.fetchone()
-            if row is None:
-                return None
-            
-            columns = [desc[0] for desc in cursor.description] # On récupre les columns name
-            return pd.DataFrame([row], columns=columns)
+def get_employee(id: int):
+    db = SessionLocal()
+    try:
+        employee = db.query(Employee).filter(
+            Employee.id_employee == id
+        ).first()
+
+        if employee is None:
+            return None
+        row = {c.name: getattr(employee, c.name)
+               for c in Employee.__table__.columns}
+        return pd.DataFrame([row])
+    finally:
+        db.close()
 
 
 def get_employees_groupe(poste):
-    with get_connection() as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM employees WHERE poste = %s;", (poste,))  # ← poste au lieu de id
-            rows = cursor.fetchall()  # ← fetchall pour récupérer tous les employés du groupe
-            if not rows:
-                return None
-            
-            columns = [desc[0] for desc in cursor.description]
-            return pd.DataFrame(rows, columns=columns)  # ← rows au lieu de [row]
-        
+    db = SessionLocal()
+    try:
+        employees = db.query(Employee).filter(
+            Employee.poste == poste
+        ).all()
+
+        if employees is None:
+            return None
+        row = {c.name: getattr(e, c.name)
+                for c in Employee.__table__.columns
+               for e in employees}
+    finally:
+        db.close()
+
+
 def log_prediction(id_employee, prediction, probabilite, resultat):
-    with get_connection() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO prediction_logs 
-                (id_employee, prediction, probabilite_depart, resultat)
-                VALUES (%s, %s, %s, %s)
-            """, (id_employee, prediction, probabilite, resultat))
-            conn.commit()
+    db = SessionLocal()
+    try:
+        log = PredictionLog(
+            id_employee=id_employee,
+            prediction=prediction,
+            probabilite_depart=probabilite,
+            resultat=resultat
+        )
+        db.add(log)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"Erreur log : {e}")
+    finally:
+        db.close()
