@@ -21,22 +21,20 @@ jobs:
     # Étape 2 — Créer le .env pour les tests
     - name: Créer le .env
       run: |
-        echo "DB_HOST=db" >> .env
-        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-        echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-        echo "S3_URL=http://minio:9000" >> .env
-        echo "S3_KEY=${{ secrets.S3_KEY }}" >> .env
-        echo "S3_SECRET=${{ secrets.S3_SECRET }}" >> .env
-        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+        echo "DB_HOST=db" >> .env.test
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.test
+        echo "DB_USER=${{ secrets.DB_USER }}" >> .env.test
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.test
+        echo "S3_URL=http://minio:9000" >> .env.test
+        echo "S3_KEY=${{ secrets.S3_KEY }}" >> .env.test
+        echo "S3_SECRET=${{ secrets.S3_SECRET }}" >> .env.test
+        echo "API_KEY=${{ secrets.API_KEY }}" >> .env.test
       # "run" = exécute des commandes shell directement
       # on injecte les variables d'env depuis les secrets GitHub
 
     # Étape 3 — Builder et lancer les containers
     - name: Lancer docker compose
-      run: |
-        docker compose up --build -d db minio
-        docker compose up --build -d api
+      run: docker compose --env-file .env.test up --build -d
       # -d = detached, tourne en arrière plan
 
     # Étape 4 — Attendre que les services soient prêts
