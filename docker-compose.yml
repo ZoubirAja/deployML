@@ -14,14 +14,14 @@ services:
   api:
     build: .
     env_file:
-    - .env.test        # ← rajoute ça
+    - .env.test
     environment:
       - APP_ENV=test
     ports:
       - "7860:7860"
     depends_on:
       - db   
-      - minio                   # attend que la BDD soit up
+      - minio
     volumes:
       - ./:/app
       - /app/venv
