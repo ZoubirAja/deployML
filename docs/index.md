@@ -5,7 +5,7 @@ API de prédiction de départ employé basée sur un modèle LinearSVC.
 ## Démarrage rapide
 
 ```bash
-git clone https://github.com/toi/deployml
+git clone https://github.com/ZoubirAja/deployml
 cd deployml
 cp .env.example .env.dev
 docker compose up --build
