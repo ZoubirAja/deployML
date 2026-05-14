@@ -21,6 +21,7 @@ jobs:
     # Étape 2 — Créer le .env pour les tests
     - name: Créer le .env
       run: |
+        echo "APP_ENV=test" >> .env.test 
         echo "DB_HOST=db" >> .env.test
         echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.test
         echo "DB_USER=${{ secrets.DB_USER }}" >> .env.test

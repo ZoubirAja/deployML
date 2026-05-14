@@ -13,6 +13,10 @@ services:
 
   api:
     build: .
+    env_file:
+    - .env.test        # ← rajoute ça
+    environment:
+      - APP_ENV=test
     ports:
       - "7860:7860"
     depends_on:
