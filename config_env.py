@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 
 APP_ENV = os.getenv("APP_ENV", "dev")
 
-env_file = f".env.test"
+env_file = f".env.{APP_ENV}"
 if os.path.exists(env_file):
     load_dotenv(env_file)
 else:
-    load_dotenv(".env.test")  # fallback
+    load_dotenv(".env")  # fallback
 
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"

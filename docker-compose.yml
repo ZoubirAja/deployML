@@ -16,7 +16,7 @@ services:
     ports:
       - "7860:7860"
     env_file:
-      - .env.test                    # charge ton .env automatiquement
+      - .env                    # charge ton .env automatiquement
     depends_on:
       - db   
       - minio                   # attend que la BDD soit up
