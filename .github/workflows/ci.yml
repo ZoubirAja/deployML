@@ -35,7 +35,9 @@ jobs:
 
     # Étape 3 — Builder et lancer les containers
     - name: Lancer docker compose
-      run: docker compose --env-file .env.test up --build -d
+      run: |
+        set -a && source .env.test && set +a
+        docker compose --env-file .env.test up --build -d
       # -d = detached, tourne en arrière plan
 
     # Étape 4 — Attendre que les services soient prêts
