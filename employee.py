@@ -160,6 +160,22 @@ def get_employee(id: int):
     finally:
         db.close()
 
+def get_postes():
+    db = SessionLocal()
+    try:
+        encoding_inverse = {v: k for k, v in TARGET_ENCODING.items()}
+        postes_raw = db.query(Employee.poste).distinct().all()
+        
+        result = [encoding_inverse.get(p[0]) for p in postes_raw if p[0] is not None]
+        result = [p for p in result if p is not None] 
+        return result
+    except Exception as e:
+        print("ERREUR get_postes:", e)
+        return []
+    finally:
+        db.close()
+
+get_employee(1)
 
 def get_employees_groupe(poste):
     db = SessionLocal()
@@ -170,9 +186,9 @@ def get_employees_groupe(poste):
 
         if employees is None:
             return None
-        row = {c.name: getattr(e, c.name)
-                for c in Employee.__table__.columns
-               for e in employees}
+        rows = [{c.name: getattr(e, c.name) for c in Employee.__table__.columns}
+                for e in employees]
+        return pd.DataFrame(rows)
     finally:
         db.close()
 

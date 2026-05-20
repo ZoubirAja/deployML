@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
 import logging
-from employee import get_employee, get_employees_groupe, log_prediction, EmployeeInput, prepare_dataframe
+from employee import get_employee, get_employees_groupe, log_prediction, EmployeeInput, prepare_dataframe, get_postes
 import joblib
 import pandas as pd
 from minio_client import download_model
@@ -11,6 +12,8 @@ from fastapi.security import APIKeyHeader
 import os
 from models import Employee 
 from config_env import DEBUG, APP_ENV
+from fastapi.staticfiles import StaticFiles
+from fastapi import Body
 
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
@@ -30,6 +33,10 @@ app = FastAPI(
     lifespan=lifespan,
     debug=DEBUG
 )
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
 # Handler d'erreur global
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -46,9 +53,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     
 pipeline, calibrator, target_encoding, feature_names, score = joblib.load('model.pkl')
 
-@app.get("/")
-def root():
-    return {"message": "Hello World ! \n deployML API tourne !!"}
+@app.get("/", include_in_schema=False)
+def home(request: Request):
+    postes = get_postes()
+    return templates.TemplateResponse(request, "home.html", {"postes": postes})
 
 @app.post("/predict/{id_employee}", dependencies=[Depends(verify_api_key)])
 def predict_by_id(id_employee: int):
@@ -105,11 +113,11 @@ def run_prediction(employee_df, id_employee=None):
         "resultat": resultat
     }
 
-@app.post("/predict/group/{poste}")
-def predict_poste(poste: str):
+@app.post("/predict_poste")
+def predict_poste(poste: str = Body(..., embed=True)):
     # Appliquer le target encoding sur le poste
+    
     poste_encoded = target_encoding.get(poste.lower(), .5)
-
     employee_df = get_employees_groupe(poste_encoded)
     if employee_df is None:
         return {"Erreur": "Aucun employé trouvé pour ce poste"}
@@ -140,12 +148,18 @@ def predict_poste(poste: str):
                 "probabilite_de_depart": f"{round(probas_depart[i] * 100)}%"
             }
             for i in top5_idx]
+    
+    n = 0
+    print(probas_depart)
+    for p in probas_depart:
+        if (p > 0.3):
+            n = n + 1
 
     return {
         "poste": poste,
         "nombre_employes": len(prediction),
-        "nombre_departs_prevus": int(prediction.sum()),
-        "taux_de_depart_prevu": f"{round(prediction.sum() / len(prediction) * 100)}%",
+        "nombre_departs_prevus": n,
+        "taux_de_depart_prevu": f"{round(n / len(prediction) * 100)}%",
         "taux_de_risque_moyen": f"{round(probas_depart.mean() * 100)}%",
         "top5_employes_a_risque": top5
     }
