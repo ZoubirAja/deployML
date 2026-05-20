@@ -10,10 +10,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import APIKeyHeader
 import os
-from models import Employee 
 from config_env import DEBUG, APP_ENV
 from fastapi.staticfiles import StaticFiles
 from fastapi import Body
+from fastapi.middleware.cors import CORSMiddleware
 
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key")
 
@@ -36,6 +36,14 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
+# CORS — nécessaire pour que Swagger fonctionne sur HF Spaces
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Handler d'erreur global
 @app.exception_handler(Exception)
@@ -99,13 +107,16 @@ def run_prediction(employee_df, id_employee=None):
     
     resultat = "Va quitter l'entreprise" if prediction[0] == 1 else "Va rester dans l'entreprise"
     
+    try: 
     # Sauvegarde résultalt
-    log_prediction(
-        id_employee=id_employee,
-        prediction=int(prediction[0]),
-        probabilite=round(proba[0][1]*100),
-        resultat=resultat
-    )
+        log_prediction(
+            id_employee=id_employee,
+            prediction=int(prediction[0]),
+            probabilite=round(proba[0][1]*100),
+            resultat=resultat
+        )
+    except Exception as e:
+        logging.warning(f"log_prediction échoué (BDD down probable) : {e}")
 
     return {
         "prediction": int(prediction[0]),
