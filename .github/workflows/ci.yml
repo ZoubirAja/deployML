@@ -36,7 +36,6 @@ jobs:
     - name: Lancer docker compose
       run: |
         docker compose --env-file .env.test up --build -d
-        docker compose logs api
       # -d = detached, tourne en arrière plan
     - name: Vérifier les variables dans le container
       run: |
