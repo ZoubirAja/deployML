@@ -35,7 +35,11 @@ jobs:
 
     # Étape 3 — Builder et lancer les containers
     - name: Lancer docker compose
-      run: docker compose --env-file .env.test up --build -d
+        run: |
+          docker compose up --build -d db minio
+          docker compose up --build -d api
+          docker compose ps -a
+          docker compose logs api || true
       # -d = detached, tourne en arrière plan
 
     # Étape 4 — Attendre que les services soient prêts
