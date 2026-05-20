@@ -38,6 +38,11 @@ jobs:
         docker compose --env-file .env.test up --build -d
         docker compose logs api
       # -d = detached, tourne en arrière plan
+    - name: Vérifier les variables dans le container
+      run: |
+        docker compose exec -T api env | grep DB_
+        docker compose exec -T api env | grep S3_
+        docker compose exec -T api env | grep API_KEY
 
     # Étape 4 — Attendre que les services soient prêts
     - name: Attendre que l'API soit prête
