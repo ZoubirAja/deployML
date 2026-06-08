@@ -2,8 +2,6 @@ services:
 
   db:
     image: postgres:16
-    env_file:
-    - .env.test
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -15,8 +13,6 @@ services:
 
   api:
     build: .
-    env_file:
-    - .env.test
     ports:
       - "7860:7860"
     depends_on:
@@ -28,8 +24,6 @@ services:
   
   minio:
     image: minio/minio
-    env_file:
-    - .env.test
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${S3_KEY}
