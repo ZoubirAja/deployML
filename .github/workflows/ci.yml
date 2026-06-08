@@ -43,6 +43,19 @@ jobs:
       run: |
         docker compose --env-file .env.test up --build -d
 
+    - name: Debug API
+      run: |
+        docker compose --env-file .env.test ps -a
+
+        echo "===== API LOGS ====="
+        docker compose --env-file .env.test logs api || true
+
+        echo "===== DB LOGS ====="
+        docker compose --env-file .env.test logs db || true
+
+        echo "===== MINIO LOGS ====="
+        docker compose --env-file .env.test logs minio || true
+
     - name: Debug immédiat
       run: |
         echo "=== CONTAINERS ==="
@@ -62,8 +75,8 @@ jobs:
       run: |
         echo "Attente de l'API..."
         for i in $(seq 1 10); do
-          if docker compose ps --status running | grep -q api; then
-            if docker compose exec -T api echo "ok" >/dev/null 2>&1; then
+          if docker compose --env-file .env.test ps --status running | grep -q api; then
+            if docker compose --env-file .env.test exec -T api echo "ok" >/dev/null 2>&1; then
               echo "API prête"
               exit 0
             fi
@@ -87,7 +100,7 @@ jobs:
       run: |
         echo "=== .env.test ==="
         cat .env.test | sed 's/=.*/=***/'
-        
+
     # Étape 5 — Initialiser la BDD
     - name: Initialiser la BDD
       run: |
