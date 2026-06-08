@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeployML — Prédiction RH</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <span class="navbar-brand">Deploy<span>ML</span></span>
+</nav>
+<div class="hero">
+  <div class="container">
+    <h1>Prédiction de départ employé</h1>
+    <p>Analysez le risque de départ de vos collaborateurs grâce au modèle ML.</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label class="form-label">Clé API</label>
+      <input type="password" id="api-key" class="form-control api-key-field" placeholder="Votre X-API-Key">
+    </div>
+  </div>
+
+  <div class="card-section justify-content-center">
+    <span class="badge-section">Recherche par ID</span>
+    <h5>Prédire depuis la base de données</h5>
+
+    <div class="row g-3 justify-content-center">
+      <div class="col-auto">
+        <label class="form-label" for="employee-id">ID employé</label>
+        <input type="number" id="employee-id" class="form-control" style="width: 160px;" placeholder="Ex: 42" min="1">
+
+        <button class="btn btn-predict d-flex align-items-center mt-3" onclick="predictById()">
+          Analyser
+          <div class="spinner" id="spinner-id"></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-3 justify-content-center">
+      <div class="result-box col-3" id="result-id">
+        <div class="d-flex justify-content-center">
+          <div id="error-id" class="alert alert-danger mt-3" style="display:none; font-size: 1.5rem;"></div>
+          <span class="result-icon" id="icon-id"></span>
+          <div>
+            <div class="result-proba" id="proba-id"></div>
+            <div class="result-label" id="label-id"> de chances de quitter l'entreprise</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<div class="card-section">
+    <span class="badge-section">Données brutes</span>
+    <h5>Prédire depuis un formulaire</h5>
+ 
+    <div class="row g-3">
+ 
+      <!-- Heures supplémentaires -->
+      <div class="col-md-6">
+        <label class="form-label">L'employé fait-il des heures supplémentaires ?</label>
+        <select id="f-heure_supplementaires" class="form-select">
+          <option value="1">Oui</option>
+          <option value="0">Non</option>
+        </select>
+      </div>
+ 
+      <!-- Genre -->
+      <div class="col-md-6">
+        <label class="form-label">Genre</label>
+        <select id="f-genre" class="form-select">
+          <option value="1">Homme</option>
+          <option value="0">Femme</option>
+        </select>
+      </div>
+ 
+      <!-- Âge -->
+      <div class="col-md-4">
+        <label class="form-label">Âge</label>
+        <input type="number" id="f-age" class="form-control" min="18" max="100" placeholder="Ex: 35">
+      </div>
+ 
+      <!-- Revenu mensuel -->
+      <div class="col-md-4">
+        <label class="form-label">Revenu mensuel (€)</label>
+        <input type="number" id="f-revenu_mensuel" class="form-control" min="0" placeholder="Ex: 3500">
+      </div>
+ 
+      <!-- Distance domicile/travail -->
+      <div class="col-md-4">
+        <label class="form-label">Distance domicile – travail (km)</label>
+        <input type="number" id="f-distance_domicile_travail" class="form-control" min="0" placeholder="Ex: 12">
+      </div>
+ 
+      <!-- Poste (chargé depuis la BDD) -->
+      <div class="col-md-6">
+        <label class="form-label">Poste</label>
+        <select id="f-poste" class="form-select">
+          {% for poste in postes %}
+            <option value="{{ poste }}">{{ poste | capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+ 
+      <!-- Département -->
+      <div class="col-md-6">
+        <label class="form-label">Département</label>
+        <select id="f-departement" class="form-select">
+          <option value="consulting">Consulting</option>
+          <option value="rh">RH</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </div>
+ 
+      <!-- Fréquence de déplacement -->
+      <div class="col-md-6">
+        <label class="form-label">Fréquence de déplacement</label>
+        <select id="f-frequence_deplacement" class="form-select">
+          <option value="jamais">Jamais</option>
+          <option value="occasionnel">Occasionnel</option>
+          <option value="frequent">Fréquent</option>
+        </select>
+      </div>
+ 
+      <!-- Niveau d'éducation -->
+      <div class="col-md-6">
+        <label class="form-label">Niveau d'éducation <small class="text-muted">(1 = Bac, 5 = Doctorat)</small></label>
+        <select id="f-niveau_education" class="form-select">
+          <option value="1">1 — Bac</option>
+          <option value="2">2 — Bac+2</option>
+          <option value="3">3 — Licence</option>
+          <option value="4">4 — Master</option>
+          <option value="5">5 — Doctorat</option>
+        </select>
+      </div>
+ 
+      <!-- Expériences précédentes -->
+      <div class="col-md-4">
+        <label class="form-label">Nb d'emplois précédents</label>
+        <input type="number" id="f-nombre_experiences_precedentes" class="form-control" min="0" placeholder="Ex: 2">
+      </div>
+ 
+      <!-- Années expérience totale -->
+      <div class="col-md-4">
+        <label class="form-label">Années d'expérience totale</label>
+        <input type="number" id="f-annee_experience_totale" class="form-control" min="0" placeholder="Ex: 10">
+      </div>
+ 
+      <!-- Années dans l'entreprise -->
+      <div class="col-md-4">
+        <label class="form-label">Années dans l'entreprise</label>
+        <input type="number" id="f-annees_dans_l_entreprise" class="form-control" min="0" placeholder="Ex: 4">
+      </div>
+ 
+      <!-- Années dans le poste actuel -->
+      <div class="col-md-4">
+        <label class="form-label">Années dans le poste actuel</label>
+        <input type="number" id="f-annees_dans_le_poste_actuel" class="form-control" min="0" placeholder="Ex: 2">
+      </div>
+ 
+      <!-- Années depuis dernière promotion -->
+      <div class="col-md-4">
+        <label class="form-label">Années depuis dernière promotion</label>
+        <input type="number" id="f-annees_depuis_la_derniere_promotion" class="form-control" min="0" placeholder="Ex: 1">
+      </div>
+ 
+      <!-- Années sous responsable actuel -->
+      <div class="col-md-4">
+        <label class="form-label">Années sous le responsable actuel</label>
+        <input type="number" id="f-annes_sous_responsable_actuel" class="form-control" min="0" placeholder="Ex: 3">
+      </div>
+ 
+      <!-- Participation PEE -->
+      <div class="col-md-4">
+        <label class="form-label">Nb participations PEE</label>
+        <input type="number" id="f-nombre_participation_pee" class="form-control" min="0" placeholder="Ex: 1">
+      </div>
+ 
+      <!-- Formations suivies -->
+      <div class="col-md-4">
+        <label class="form-label">Nb formations suivies</label>
+        <input type="number" id="f-nb_formations_suivies" class="form-control" min="0" placeholder="Ex: 3">
+      </div>
+ 
+      <!-- Augmentation salaire -->
+      <div class="col-md-4">
+        <label class="form-label">Augmentation salariale précédente (%)</label>
+        <input type="number" id="f-augmentation_salaire_precedente_pourcentage" class="form-control" min="0" max="100" placeholder="Ex: 15">
+      </div>
+ 
+    </div><!-- /row -->
+ 
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <button class="btn btn-predict d-flex align-items-center" onclick="predictByForm()">
+        Analyser
+        <div class="spinner" id="spinner-form"></div>
+      </button>
+    </div>
+    <div class="row g-3 justify-content-center mt-2">
+      <div class="result-box col-4" id="result-form" style="display:none;">
+        <div class="d-flex justify-content-center">
+          <span class="result-icon" id="icon-form"></span>
+          <div>
+            <div class="result-proba" id="proba-form"></div>
+            <div class="result-label" id="label-form"> de chances de quitter l'entreprise</div>
+          </div>
+        </div>
+      </div>
+      <div id="error-form" class="alert alert-danger mt-3" style="display:none; font-size: 0.9rem;"></div>
+    </div>
+ 
+  </div>
+
+  <div class="card-section">
+    <span class="badge-section">Analyse de groupe</span>
+    <h5>Prédire par poste</h5>
+
+    <div class="col-md-6">
+      <label class="form-label">Poste</label>
+      <select id="p-poste" class="form-select">
+        {% for poste in postes %}
+          <option value="{{ poste }}">{{ poste | capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <button class="btn btn-predict d-flex align-items-center" onclick="predictByPoste()">
+        Analyser
+        <div class="spinner" id="spinner-poste"></div>
+      </button>
+    </div>
+
+    <div id="error-poste" class="alert alert-danger mt-3" style="display:none; font-size: 0.9rem;"></div>
+
+    <div id="result-poste" style="display:none; margin-top: 1.5rem;">
+
+      <!-- Résumé chiffres clés -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div style="background: #e8f4fd; border: 1px solid #b8d9f5; border-radius: 12px; padding: 1.2rem; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #1a6fb5;" id="stat-total">—</div>
+            <div style="font-size: 0.8rem; color: #4a7fa8; margin-top: 4px;">Employés analysés</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="background: #e8f4fd; border: 1px solid #b8d9f5; border-radius: 12px; padding: 1.2rem; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #1a6fb5;" id="stat-departs">—</div>
+            <div style="font-size: 0.8rem; color: #4a7fa8; margin-top: 4px;">Départs prévus</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="background: #e8f4fd; border: 1px solid #b8d9f5; border-radius: 12px; padding: 1.2rem; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #1a6fb5;" id="stat-taux">—</div>
+            <div style="font-size: 0.8rem; color: #4a7fa8; margin-top: 4px;">Taux de départ</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="background: #e8f4fd; border: 1px solid #b8d9f5; border-radius: 12px; padding: 1.2rem; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: #1a6fb5;" id="stat-risque">—</div>
+            <div style="font-size: 0.8rem; color: #4a7fa8; margin-top: 4px;">Risque moyen</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 5 -->
+      <h6 style="font-weight: 600; margin-bottom: 1rem;">⚠️ Top 5 employés les plus à risque</h6>
+      <div id="top5-container" class="row g-2"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,212 @@
+    :root {
+      --green-light: #d1fae5;
+      --green-border: #10b981;
+      --green-text: #065f46;
+      --red-light: #fee2e2;
+      --red-border: #ef4444;
+      --red-text: #7f1d1d;
+    }
+
+    body {
+      background-color: #f8fafc;
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--red-border);
+    }
+
+    .navbar {
+      background: #0f172a;
+      padding: 1rem 2rem;
+    }
+
+    .navbar-brand {
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .navbar-brand span {
+      color: #38bdf8;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      color: white;
+      padding: 3rem 0 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .card-section {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-section h5 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .card-section .badge-section {
+      display: inline-block;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .form-label {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .form-control, .form-select {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .btn-predict {
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-predict:hover {
+      background: #1e293b;
+      color: white;
+    }
+
+    .btn-predict:active {
+      transform: scale(0.98);
+    }
+
+    .btn-predict:disabled {
+      background: #94a3b8;
+    }
+
+    .result-box {
+      display: none;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.25rem;
+      border-left: 4px solid;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-box.depart {
+      background: var(--red-light);
+      border-color: var(--red-border);
+      color: var(--red-text);
+    }
+
+    .result-box.reste {
+      background: var(--green-light);
+      border-color: var(--green-border);
+      color: var(--green-text);
+    }
+
+    .result-icon {
+      font-size: 3rem;
+      margin-right: 0.75rem;
+    }
+
+    .result-proba {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .result-label {
+      font-size: 1rem;
+      margin-top: 2px;
+      opacity: 0.85;
+    }
+
+    .progress-bar-wrap {
+      height: 6px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 99px;
+      margin-top: 0.75rem;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.7s ease;
+    }
+
+    .result-box.depart .progress-bar-fill { background: var(--red-border); }
+    .result-box.reste  .progress-bar-fill { background: var(--green-border); }
+
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .api-key-field {
+      max-width: 300px;
+    }
+
+    .coming-soon {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .coming-soon .icon { font-size: 2rem; margin-bottom: 0.5rem; }
