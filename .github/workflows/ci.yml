@@ -83,6 +83,11 @@ jobs:
       if: failure()   # ← s'exécute UNIQUEMENT si une étape précédente a échoué
       run: docker compose logs api
 
+    - name: Vérifier le fichier .env.test
+      run: |
+        echo "=== .env.test ==="
+        cat .env.test | sed 's/=.*/=***/'
+        
     # Étape 5 — Initialiser la BDD
     - name: Initialiser la BDD
       run: |
