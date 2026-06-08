@@ -33,14 +33,29 @@ jobs:
       # on injecte les variables d'env depuis les secrets GitHub
 
     # Étape 3 — Builder et lancer les containers
-    - name: Lancer docker compose
-      run: docker compose --env-file .env.test up --build -d
-      # -d = detached, tourne en arrière plan
-    - name: Vérifier les variables dans le container
+    - name: Nettoyage Docker
       run: |
-        docker compose exec -T api env | grep DB_
-        docker compose exec -T api env | grep S3_
-        docker compose exec -T api env | grep API_KEY
+        docker compose down -v || true
+        docker network prune -f || true
+        docker system prune -f || true
+
+    - name: Lancer docker compose
+      run: |
+        docker compose --env-file .env.test up --build -d
+
+    - name: Debug immédiat
+      run: |
+        echo "=== CONTAINERS ==="
+        docker compose --env-file .env.test ps -a
+
+        echo "=== LOGS API ==="
+        docker compose --env-file .env.test logs api || true
+
+        echo "=== LOGS DB ==="
+        docker compose --env-file .env.test logs db || true
+
+        echo "=== LOGS MINIO ==="
+        docker compose --env-file .env.test logs minio || true
 
     # Étape 4 — Attendre que les services soient prêts
     - name: Attendre que l'API soit prête
