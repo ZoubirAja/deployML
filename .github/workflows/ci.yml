@@ -21,14 +21,14 @@ jobs:
     # Étape 2 — Créer le .env pour les tests
     - name: Créer le .env
       run: |
-        echo "DB_HOST=db" >> .env.test
-        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.test
-        echo "DB_USER=${{ secrets.DB_USER }}" >> .env.test
-        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.test
-        echo "S3_URL=http://minio:9000" >> .env.test
-        echo "S3_KEY=${{ secrets.S3_KEY }}" >> .env.test
-        echo "S3_SECRET=${{ secrets.S3_SECRET }}" >> .env.test
-        echo "API_KEY=${{ secrets.API_KEY }}" >> .env.test
+        echo "DB_HOST=db" >> .env
+        echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+        echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+        echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+        echo "S3_URL=http://minio:9000" >> .env
+        echo "S3_KEY=${{ secrets.S3_KEY }}" >> .env
+        echo "S3_SECRET=${{ secrets.S3_SECRET }}" >> .env
+        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
       # "run" = exécute des commandes shell directement
       # on injecte les variables d'env depuis les secrets GitHub
 
@@ -41,11 +41,11 @@ jobs:
 
     - name: Lancer docker compose
       run: |
-        docker compose --env-file .env.test up --build -d
+        docker compose --env-file .env up --build -d
 
     - name: Vérifier les logs du conteneur API
       run: |
-        docker compose --env-file .env.test ps -a
+        docker compose --env-file .env ps -a
         docker logs deployml-api-1 || true
 
     - name: Logs du conteneur API
@@ -54,38 +54,38 @@ jobs:
 
     - name: Debug API
       run: |
-        docker compose --env-file .env.test ps -a
+        docker compose --env-file .env ps -a
 
         echo "===== API LOGS ====="
-        docker compose --env-file .env.test logs api || true
+        docker compose --env-file .env logs api || true
 
         echo "===== DB LOGS ====="
-        docker compose --env-file .env.test logs db || true
+        docker compose --env-file .env logs db || true
 
         echo "===== MINIO LOGS ====="
-        docker compose --env-file .env.test logs minio || true
+        docker compose --env-file .env logs minio || true
 
     - name: Debug immédiat
       run: |
         echo "=== CONTAINERS ==="
-        docker compose --env-file .env.test ps -a
+        docker compose --env-file .env ps -a
 
         echo "=== LOGS API ==="
-        docker compose --env-file .env.test logs api || true
+        docker compose --env-file .env logs api || true
 
         echo "=== LOGS DB ==="
-        docker compose --env-file .env.test logs db || true
+        docker compose --env-file .env logs db || true
 
         echo "=== LOGS MINIO ==="
-        docker compose --env-file .env.test logs minio || true
+        docker compose --env-file .env logs minio || true
 
     # Étape 4 — Attendre que les services soient prêts
     - name: Attendre que l'API soit prête
       run: |
         echo "Attente de l'API..."
         for i in $(seq 1 10); do
-          if docker compose --env-file .env.test ps --status running | grep -q api; then
-            if docker compose --env-file .env.test exec -T api echo "ok" >/dev/null 2>&1; then
+          if docker compose --env-file .env ps --status running | grep -q api; then
+            if docker compose --env-file .env exec -T api echo "ok" >/dev/null 2>&1; then
               echo "API prête"
               exit 0
             fi
@@ -105,10 +105,21 @@ jobs:
       if: failure()   # ← s'exécute UNIQUEMENT si une étape précédente a échoué
       run: docker compose logs api
 
-    - name: Vérifier le fichier .env.test
+    - name: Debug final
       run: |
-        echo "=== .env.test ==="
-        cat .env.test | sed 's/=.*/=***/'
+        docker compose --env-file .env ps -a
+
+        echo "=== CONTAINER STATUS ==="
+        docker inspect deployml-api-1 --format='{{.State.Status}}'
+
+        echo "=== EXIT CODE ==="
+        docker inspect deployml-api-1 --format='{{.State.ExitCode}}'
+
+        echo "=== RESTART COUNT ==="
+        docker inspect deployml-api-1 --format='{{.RestartCount}}'
+
+        echo "=== LAST 100 LOGS ==="
+        docker logs --tail 100 deployml-api-1 || true
 
     # Étape 5 — Initialiser la BDD
     - name: Initialiser la BDD
