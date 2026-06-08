@@ -43,6 +43,11 @@ jobs:
       run: |
         docker compose --env-file .env.test up --build -d
 
+    - name: Vérifier les logs du conteneur API
+      run: |
+        docker compose --env-file .env.test ps -a
+        docker logs deployml-api-1 || true
+
     - name: Debug API
       run: |
         docker compose --env-file .env.test ps -a
