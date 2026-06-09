@@ -73,6 +73,10 @@ def predict_by_id(id_employee: int):
         return {
             "Erreur": "Aucun Employé trouvé pour cet id"
         }
+    
+    # On récupère les données pour préremplir le formulaire
+    raw = employee_df.drop(columns=["a_quitte_l_entreprise"], errors="ignore").iloc[0].to_dict()
+
     # Remettre les noms de colonnes originaux attendus par le pipeline
     employee_df = employee_df.rename(columns={
         "departement_consulting": "departement_Consulting",
@@ -86,7 +90,10 @@ def predict_by_id(id_employee: int):
     if employee_df['poste'].isna().any():
         employee_df['poste'] = employee_df['poste'].fillna(0.5)
 
-    return run_prediction(employee_df, id_employee)
+    result = run_prediction(employee_df, id_employee)
+    # ← Injecter les données brutes dans la réponse
+    result["donnees_employe"] = raw
+    return result
 
 @app.post("/predict_nouveau", dependencies=[Depends(verify_api_key)])
 def predict_from_data(donnees: EmployeeInput):

@@ -175,8 +175,6 @@ def get_postes():
     finally:
         db.close()
 
-get_employee(1)
-
 def get_employees_groupe(poste):
     db = SessionLocal()
     try:
