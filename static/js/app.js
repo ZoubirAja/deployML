@@ -40,6 +40,7 @@
       const data = await response.json();
       if (data.Erreur) { errorBox.textContent = data.Erreur; errorBox.style.display = 'block'; return; }
       showResult('result-id', 'icon-id', 'proba-id', 'label-id', data);
+      if (data.donnees_employe) prefillForm(data.donnees_employe);
     } catch (err) {
       errorBox.textContent = err.message || "Erreur inattendue.";
       errorBox.style.display = 'block';
@@ -178,3 +179,34 @@
   document.getElementById('employee-id').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') predictById();
   });
+
+  /* ── Pré-remplissage formulaire depuis ID ── */
+function prefillForm(d) {
+  console.log("Hello World !!!!!!!")
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  };
+
+  set('f-heure_supplementaires',                    d.heure_supplementaires);
+  set('f-genre',                                    d.genre);
+  set('f-age',                                      d.age);
+  set('f-revenu_mensuel',                           d.revenu_mensuel);
+  set('f-distance_domicile_travail',                d.distance_domicile_travail);
+  set('f-poste',                                    d.poste);
+  set('f-departement',                              d.departement);
+  set('f-frequence_deplacement',                    d.frequence_deplacement);
+  set('f-niveau_education',                         d.niveau_education);
+  set('f-nombre_experiences_precedentes',           d.nombre_experiences_precedentes);
+  set('f-annee_experience_totale',                  d.annee_experience_totale);
+  set('f-annees_dans_l_entreprise',                 d.annees_dans_l_entreprise);
+  set('f-annees_dans_le_poste_actuel',              d.annees_dans_le_poste_actuel);
+  set('f-annees_depuis_la_derniere_promotion',      d.annees_depuis_la_derniere_promotion);
+  set('f-annes_sous_responsable_actuel',            d.annes_sous_responsable_actuel);
+  set('f-nombre_participation_pee',                 d.nombre_participation_pee);
+  set('f-nb_formations_suivies',                    d.nb_formations_suivies);
+  set('f-augmentation_salaire_precedente_pourcentage', d.augmentation_salaire_precedente_pourcentage);
+
+  // Feedback visuel : scroll vers le formulaire
+  document.querySelector('[data-section="form"]')?.scrollIntoView({ behavior: 'smooth' });
+}
