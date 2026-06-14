@@ -31,6 +31,8 @@ jobs:
         echo "API_KEY=${{ secrets.API_KEY }}" >> .env.test
       # "run" = exécute des commandes shell directement
       # on injecte les variables d'env depuis les secrets GitHub
+    - name: Copy env file
+      run: cp .env.test .env
 
     # Étape 3 — Builder et lancer les containers
     - name: Nettoyage Docker
