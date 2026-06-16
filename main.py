@@ -70,9 +70,10 @@ def home(request: Request):
 def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
     if employee_df is None:
-        return {
-            "Erreur": "Aucun Employé trouvé pour cet id"
-        }
+        return JSONResponse(
+            status_code=200,
+            content={"Erreur": "Aucun employée pour cet ID"}
+        )
     
     # On récupère les données pour préremplir le formulaire
     raw = employee_df.drop(columns=["a_quitte_l_entreprise"], errors="ignore").iloc[0].to_dict()
@@ -131,7 +132,7 @@ def run_prediction(employee_df, id_employee=None):
         "resultat": resultat
     }
 
-@app.post("/predict_poste")
+@app.post("/predict_poste", dependencies=[Depends(verify_api_key)])
 def predict_poste(poste: str = Body(..., embed=True)):
     # Appliquer le target encoding sur le poste
     
