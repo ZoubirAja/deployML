@@ -71,7 +71,7 @@ def predict_by_id(id_employee: int):
     employee_df = get_employee(id_employee)
     if employee_df is None:
         return JSONResponse(
-            status_code=403,
+            status_code=200,
             content={"Erreur": "Aucun employée pour cet ID"}
         )
     
