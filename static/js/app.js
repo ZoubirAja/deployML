@@ -36,9 +36,21 @@
         method: 'POST',
         headers: { 'X-API-Key': apiKey }
       });
-      if (!response.ok) { const e = await response.json(); throw new Error(e.detail || `Erreur ${response.status}`); }
       const data = await response.json();
-      if (data.Erreur) { errorBox.textContent = data.Erreur; errorBox.style.display = 'block'; return; }
+      if (!response.ok) {
+        if (data.Erreur) {
+
+          errorBox.textContent = data.Erreur;
+          errorBox.style.display = 'block'; return;
+        }
+        const e = await response.json();
+        throw new Error(e.detail || `Erreur ${response.status}`);
+      }
+      
+      if (data.Erreur) {
+        errorBox.textContent = data.Erreur;
+        errorBox.style.display = 'block'; return;
+      }
       showResult('result-id', 'icon-id', 'proba-id', 'label-id', data);
       if (data.donnees_employe) prefillForm(data.donnees_employe);
     } catch (err) {
